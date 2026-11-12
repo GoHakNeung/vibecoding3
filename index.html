@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>6학년 과학 학습지 - 계절이 변화는 까닭</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Pretendard', 'Malgun Gothic', '맑은 고딕', sans-serif;
+      background-color: #f0f4f8;
+      color: #1e293b;
+      line-height: 1.6;
+      padding: 24px 16px;
+    }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      padding: 36px 32px;
+    }
+
+    header {
+      text-align: center;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 20px;
+      margin-bottom: 28px;
+    }
+
+    .badge {
+      display: inline-block;
+      background-color: #dbeafe;
+      color: #1d4ed8;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 999px;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-size: 1.65rem;
+      color: #0f172a;
+      margin-bottom: 6px;
+    }
+
+    header p {
+      color: #64748b;
+      font-size: 0.95rem;
+    }
+
+    /* 학생 정보 입력 영역 */
+    .student-info {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      background-color: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 32px;
+    }
+
+    .info-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .info-field label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #475569;
+    }
+
+    .info-field input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
+    }
+
+    .info-field input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    /* 문항 카드 스타일 */
+    .question-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 22px;
+      margin-bottom: 22px;
+      background-color: #ffffff;
+    }
+
+    .question-title {
+      font-size: 1.08rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      color: #0f172a;
+    }
+
+    .q-type {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #2563eb;
+      background-color: #eff6ff;
+      padding: 2px 8px;
+      border-radius: 6px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .option-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .option-label:hover {
+      background-color: #f8fafc;
+      border-color: #93c5fd;
+    }
+
+    .option-label input[type="radio"],
+    .option-label input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #2563eb;
+      cursor: pointer;
+    }
+
+    .short-input,
+    .long-input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-family: inherit;
+    }
+
+    .long-input {
+      min-height: 96px;
+      resize: vertical;
+    }
+
+    .short-input:focus,
+    .long-input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    /* 제출 버튼 */
+    .submit-area {
+      text-align: center;
+      margin-top: 32px;
+    }
+
+    .submit-btn {
+      background-color: #2563eb;
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 40px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    .submit-btn:hover {
+      background-color: #1d4ed8;
+    }
+
+    .submit-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* 제출 결과 확인 박스 */
+    .result-box {
+      display: none;
+      margin-top: 28px;
+      padding: 22px;
+      background-color: #f0fdf4;
+      border: 1px solid #86efac;
+      border-radius: 12px;
+      color: #166534;
+    }
+
+    .result-box h3 {
+      margin-bottom: 10px;
+      font-size: 1.15rem;
+    }
+
+    .result-box ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 24px 18px;
+      }
+      .student-info {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <span class="badge">초등학교 6학년 과학</span>
+      <h1>계절이 변화는 까닭 학습지</h1>
+      <p>태양의 남중 고도, 낮의 길이, 지구의 공전과 관련지어 물음에 답해 봅시다.</p>
+    </header>
+
+    <form id="worksheetForm">
+      <!-- 학생 인적 사항 -->
+      <section class="student-info" aria-label="학생 정보 입력">
+        <div class="info-field">
+          <label for="grade">학년</label>
+          <input type="number" id="grade" name="grade" value="6" min="1" max="6" required>
+        </div>
+        <div class="info-field">
+          <label for="classNum">반</label>
+          <input type="number" id="classNum" name="classNum" placeholder="예: 1" min="1" required>
+        </div>
+        <div class="info-field">
+          <label for="studentNum">번호</label>
+          <input type="number" id="studentNum" name="studentNum" placeholder="예: 15" min="1" required>
+        </div>
+        <div class="info-field">
+          <label for="studentName">이름</label>
+          <input type="text" id="studentName" name="studentName" placeholder="이름 입력" required>
+        </div>
+      </section>
+
+      <!-- 1번 문항: 객관식 (Radio) -->
+      <section class="question-card">
+        <div class="question-title">
+          1. 지구에서 계절의 변화가 나타나는 가장 근본적인 까닭은 무엇인가요?
+          <span class="q-type">객관식 · 1개 선택</span>
+        </div>
+        <div class="options">
+          <label class="option-label">
+            <input type="radio" name="q1" value="① 지구가 자전축이 수직인 상태로 자전하기 때문이다." required>
+            <span>① 지구가 자전축이 수직인 상태로 자전하기 때문이다.</span>
+          </label>
+          <label class="option-label">
+            <input type="radio" name="q1" value="② 지구가 자전축이 기울어진 채 태양 주위를 공전하기 때문이다.">
+            <span>② 지구가 자전축이 기울어진 채 태양 주위를 공전하기 때문이다.</span>
+          </label>
+          <label class="option-label">
+            <input type="radio" name="q1" value="③ 달이 지구 주위를 한 달에 한 번씩 공전하기 때문이다.">
+            <span>③ 달이 지구 주위를 한 달에 한 번씩 공전하기 때문이다.</span>
+          </label>
+          <label class="option-label">
+            <input type="radio" name="q1" value="④ 태양이 지구 주위를 하루에 한 바퀴씩 돌기 때문이다.">
+            <span>④ 태양이 지구 주위를 하루에 한 바퀴씩 돌기 때문이다.</span>
+          </label>
+        </div>
+      </section>
+
+      <!-- 2번 문항: 객관식 (Radio) -->
+      <section class="question-card">
+        <div class="question-title">
+          2. 우리나라에서 여름철과 겨울철의 태양의 남중 고도와 낮의 길이를 바르게 비교한 것은 무엇인가요?
+          <span class="q-type">객관식 · 1개 선택</span>
+        </div>
+        <div class="options">
+          <label class="option-label">
+            <input type="radio" name="q2" value="① 여름철은 겨울철보다 태양의 남중 고도가 높고, 낮의 길이가 길다." required>
+            <span>① 여름철은 겨울철보다 태양의 남중 고도가 높고, 낮의 길이가 길다.</span>
+          </label>
+          <label class="option-label">
+            <input type="radio" name="q2" value="② 여름철은 겨울철보다 태양의 남중 고도가 낮고, 낮의 길이가 짧다.">
+            <span>② 여름철은 겨울철보다 태양의 남중 고도가 낮고, 낮의 길이가 짧다.</span>
+          </label>
+          <label class="option-label">
+            <input type="radio" name="q2" value="③ 여름철은 겨울철보다 태양의 남중 고도가 높고, 낮의 길이가 짧다.">
+            <span>③ 여름철은 겨울철보다 태양의 남중 고도가 높고, 낮의 길이가 짧다.</span>
+          </label>
+          <label class="option-label">
+            <input type="radio" name="q2" value="④ 여름철과 겨울철의 태양의 남중 고도와 낮의 길이는 항상 같다.">
+            <span>④ 여름철과 겨울철의 태양의 남중 고도와 낮의 길이는 항상 같다.</span>
+          </label>
+        </div>
+      </section>
+
+      <!-- 3번 문항: 객관식 (Checkbox) -->
+      <section class="question-card">
+        <div class="question-title">
+          3. 태양의 남중 고도가 높아질 때 나타나는 현상을 <u>모두</u> 고르세요.
+          <span class="q-type">객관식 · 복수 선택</span>
+        </div>
+        <div class="options">
+          <label class="option-label">
+            <input type="checkbox" name="q3" value="같은 면적의 지표면에 도달하는 태양 에너지양이 많아진다.">
+            <span>같은 면적의 지표면에 도달하는 태양 에너지양이 많아진다.</span>
+          </label>
+          <label class="option-label">
+            <input type="checkbox" name="q3" value="막대의 그림자 길이가 겨울철보다 길어진다.">
+            <span>막대의 그림자 길이가 겨울철보다 길어진다.</span>
+          </label>
+          <label class="option-label">
+            <input type="checkbox" name="q3" value="지표면이 더 많이 데워져 기온이 높아진다.">
+            <span>지표면이 더 많이 데워져 기온이 높아진다.</span>
+          </label>
+          <label class="option-label">
+            <input type="checkbox" name="q3" value="낮의 길이가 짧아지고 밤의 길이가 길어진다.">
+            <span>낮의 길이가 짧아지고 밤의 길이가 길어진다.</span>
+          </label>
+        </div>
+      </section>
+
+      <!-- 4번 문항: 주관식 (단답형) -->
+      <section class="question-card">
+        <div class="question-title">
+          4. 하루 중 태양이 가장 높이 떴을 때, 지표면과 태양이 이루는 각을 무엇이라고 하나요?
+          <span class="q-type">주관식 · 단답형</span>
+        </div>
+        <input type="text" class="short-input" name="q4" placeholder="정답을 입력하세요." required>
+      </section>
+
+      <!-- 5번 문항: 주관식 (서술형) -->
+      <section class="question-card">
+        <div class="question-title">
+          5. 만약 지구의 자전축이 기울어져 있지 않고 수직인 상태로 태양 주위를 공전한다면, 계절의 변화는 어떻게 될지 이유와 함께 써 보세요.
+          <span class="q-type">주관식 · 서술형</span>
+        </div>
+        <textarea class="long-input" name="q5" placeholder="자신의 생각을 자유롭게 작성해 보세요." required></textarea>
+      </section>
+
+      <!-- 제출 버튼 -->
+      <div class="submit-area">
+        <button type="submit" class="submit-btn">학습지 제출하기</button>
+      </div>
+    </form>
+
+    <!-- 제출 완료 확인 영역 -->
+    <div id="resultBox" class="result-box"></div>
+  </div>
+
+  <script>
+    document.getElementById('worksheetForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      // 3번 체크박스 최소 1개 선택 검증
+      const q3Checked = Array.from(document.querySelectorAll('input[name="q3"]:checked'))
+        .map(el => el.value);
+
+      if (q3Checked.length === 0) {
+        alert('3번 문항에서 보기 중 하나 이상을 선택해 주세요.');
+        return;
+      }
+
+      const grade = document.getElementById('grade').value;
+      const classNum = document.getElementById('classNum').value;
+      const studentNum = document.getElementById('studentNum').value;
+      const studentName = document.getElementById('studentName').value;
+
+      const q1 = document.querySelector('input[name="q1"]:checked').value;
+      const q2 = document.querySelector('input[name="q2"]:checked').value;
+      const q4 = document.querySelector('input[name="q4"]').value;
+      const q5 = document.querySelector('textarea[name="q5"]').value;
+
+      const resultBox = document.getElementById('resultBox');
+      resultBox.style.display = 'block';
+      resultBox.innerHTML = `
+        <h3>✅ 학습지가 성공적으로 제출되었습니다!</h3>
+        <p style="margin-bottom: 12px;"><strong>제출자:</strong> ${grade}학년 ${classNum}반 ${studentNum}번 ${studentName}</p>
+        <ul>
+          <li><strong>1번 답안:</strong> ${q1}</li>
+          <li><strong>2번 답안:</strong> ${q2}</li>
+          <li><strong>3번 답안:</strong> ${q3Checked.join(', ')}</li>
+          <li><strong>4번 답안:</strong> ${q4}</li>
+          <li><strong>5번 답안:</strong> ${q5}</li>
+        </ul>
+      `;
+
+      resultBox.scrollIntoView({ behavior: 'smooth' });
+    });
+  </script>
+</body>
+</html>
