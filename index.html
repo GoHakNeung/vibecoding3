@@ -32,7 +32,7 @@
       text-align: center;
       border-bottom: 2px solid #e2e8f0;
       padding-bottom: 20px;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
 
     .badge {
@@ -55,6 +55,85 @@
     header p {
       color: #64748b;
       font-size: 0.95rem;
+    }
+
+    /* 구글 로그인 배너 영역 */
+    .auth-box {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      background-color: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+    }
+
+    .auth-box.logged-in {
+      background-color: #f0fdf4;
+      border-color: #86efac;
+    }
+
+    .auth-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .auth-status-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #1e3a8a;
+    }
+
+    .auth-box.logged-in .auth-status-title {
+      color: #166534;
+    }
+
+    .auth-status-desc {
+      font-size: 0.85rem;
+      color: #475569;
+    }
+
+    .google-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background-color: #ffffff;
+      color: #1e293b;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      transition: background-color 0.15s, border-color 0.15s;
+    }
+
+    .google-btn:hover {
+      background-color: #f8fafc;
+      border-color: #94a3b8;
+    }
+
+    .logout-btn {
+      background-color: #ffffff;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .logout-btn:hover {
+      background-color: #f1f5f9;
+      color: #0f172a;
     }
 
     /* 학생 정보 입력 영역 */
@@ -237,6 +316,14 @@
       .student-info {
         grid-template-columns: repeat(2, 1fr);
       }
+      .auth-box {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+      }
+      .google-btn {
+        justify-content: center;
+      }
     }
   </style>
 </head>
@@ -247,6 +334,25 @@
       <h1>계절이 변화는 까닭 학습지</h1>
       <p>태양의 남중 고도, 낮의 길이, 지구의 공전과 관련지어 물음에 답해 봅시다.</p>
     </header>
+
+    <!-- 구글 로그인 상태 표시 및 인증 버튼 -->
+    <section id="authBox" class="auth-box" aria-label="구글 계정 로그인">
+      <div class="auth-info">
+        <span id="authStatusTitle" class="auth-status-title">🔒 구글 로그인이 필요합니다</span>
+        <span id="authStatusDesc" class="auth-status-desc">학습지를 제출하려면 먼저 구글 계정으로 로그인해 주세요.</span>
+      </div>
+      <div id="authActionArea">
+        <button type="button" id="googleLoginBtn" class="google-btn">
+          <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          </svg>
+          <span>Google 계정으로 로그인</span>
+        </button>
+      </div>
+    </section>
 
     <form id="worksheetForm">
       <!-- 학생 인적 사항 -->
@@ -367,7 +473,7 @@
 
       <!-- 제출 버튼 -->
       <div class="submit-area">
-        <button type="submit" id="submitBtn" class="submit-btn">학습지 제출하기</button>
+        <button type="submit" id="submitBtn" class="submit-btn" disabled>구글 로그인 후 제출 가능</button>
       </div>
     </form>
 
@@ -375,10 +481,22 @@
     <div id="resultBox" class="result-box"></div>
   </div>
 
-  <!-- Firebase SDK (v13.3.0) 및 Firestore 연동 -->
+  <!-- Firebase SDK (v13.3.0): Auth + Firestore -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-firestore.js";
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCD7_cFFfgUtcEg2IfpIgDPyD48AZNb38M",
@@ -390,28 +508,120 @@
     };
 
     const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
     const db = getFirestore(app);
 
-    const form = document.getElementById('worksheetForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const resultBox = document.getElementById('resultBox');
+    const provider = new GoogleAuthProvider();
+    // 공용 태블릿/노트북에서 이전 학생 계정이 자동 선택되지 않도록 계정 선택 창 항상 표시
+    provider.setCustomParameters({ prompt: "select_account" });
 
-    form.addEventListener('submit', async function(event) {
+    let currentUser = null;
+    let isSubmitted = false;
+
+    const authBox = document.getElementById("authBox");
+    const authStatusTitle = document.getElementById("authStatusTitle");
+    const authStatusDesc = document.getElementById("authStatusDesc");
+    const authActionArea = document.getElementById("authActionArea");
+    const form = document.getElementById("worksheetForm");
+    const submitBtn = document.getElementById("submitBtn");
+    const resultBox = document.getElementById("resultBox");
+
+    function escapeHtml(text) {
+      return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    // 구글 로그인 처리
+    async function handleGoogleLogin() {
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (error) {
+        console.error("Google 로그인 오류:", error);
+        if (error.code === "auth/popup-closed-by-user") return;
+        if (error.code === "auth/unauthorized-domain") {
+          alert("현재 접속한 도메인이 Firebase 인증 승인 도메인에 등록되지 않았습니다.\nFirebase 콘솔 > Authentication > Settings > 승인된 도메인에 현재 주소를 추가해 주세요.");
+          return;
+        }
+        alert("구글 로그인 중 오류가 발생했습니다: " + error.message);
+      }
+    }
+
+    // 로그아웃(계정 전환) 처리
+    async function handleLogout() {
+      try {
+        await signOut(auth);
+        isSubmitted = false;
+      } catch (error) {
+        alert("로그아웃 중 오류가 발생했습니다: " + error.message);
+      }
+    }
+
+    document.getElementById("googleLoginBtn").addEventListener("click", handleGoogleLogin);
+
+    // 로그인 상태 감지
+    onAuthStateChanged(auth, (user) => {
+      currentUser = user;
+
+      if (user) {
+        authBox.classList.add("logged-in");
+        authStatusTitle.textContent = `✅ 로그인 완료: ${user.displayName || "학생"} (${user.email})`;
+        authStatusDesc.textContent = "이제 아래 학습지를 작성하고 제출하기 버튼을 누를 수 있습니다.";
+
+        authActionArea.innerHTML = `<button type="button" id="logoutBtn" class="logout-btn">다른 계정으로 로그인</button>`;
+        document.getElementById("logoutBtn").addEventListener("click", handleLogout);
+
+        if (!isSubmitted) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "학습지 제출하기";
+        }
+      } else {
+        authBox.classList.remove("logged-in");
+        authStatusTitle.textContent = "🔒 구글 로그인이 필요합니다";
+        authStatusDesc.textContent = "학습지를 제출하려면 먼저 구글 계정으로 로그인해 주세요.";
+
+        authActionArea.innerHTML = `
+          <button type="button" id="googleLoginBtn" class="google-btn">
+            <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            </svg>
+            <span>Google 계정으로 로그인</span>
+          </button>
+        `;
+        document.getElementById("googleLoginBtn").addEventListener("click", handleGoogleLogin);
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "구글 로그인 후 제출 가능";
+      }
+    });
+
+    // 학습지 제출 처리
+    form.addEventListener("submit", async function(event) {
       event.preventDefault();
+
+      if (!currentUser) {
+        alert("먼저 상단의 'Google 계정으로 로그인' 버튼을 눌러 로그인해 주세요.");
+        return;
+      }
 
       // 3번 체크박스 최소 1개 선택 검증
       const q3Checked = Array.from(document.querySelectorAll('input[name="q3"]:checked'))
         .map(el => el.value);
 
       if (q3Checked.length === 0) {
-        alert('3번 문항에서 보기 중 하나 이상을 선택해 주세요.');
+        alert("3번 문항에서 보기 중 하나 이상을 선택해 주세요.");
         return;
       }
 
-      const grade = Number(document.getElementById('grade').value);
-      const classNum = Number(document.getElementById('classNum').value);
-      const studentNum = Number(document.getElementById('studentNum').value);
-      const studentName = document.getElementById('studentName').value.trim();
+      const grade = Number(document.getElementById("grade").value);
+      const classNum = Number(document.getElementById("classNum").value);
+      const studentNum = Number(document.getElementById("studentNum").value);
+      const studentName = document.getElementById("studentName").value.trim();
 
       const q1 = document.querySelector('input[name="q1"]:checked').value;
       const q2 = document.querySelector('input[name="q2"]:checked').value;
@@ -419,7 +629,7 @@
       const q5 = document.querySelector('textarea[name="q5"]').value.trim();
 
       submitBtn.disabled = true;
-      submitBtn.textContent = '제출 중...';
+      submitBtn.textContent = "제출 중...";
 
       try {
         const docRef = await addDoc(collection(db, "science_6_seasons"), {
@@ -427,6 +637,8 @@
           classNum: classNum,
           studentNum: studentNum,
           studentName: studentName,
+          userEmail: currentUser.email,
+          userUid: currentUser.uid,
           answers: {
             q1: q1,
             q2: q2,
@@ -437,28 +649,29 @@
           submittedAt: serverTimestamp()
         });
 
-        resultBox.style.display = 'block';
+        isSubmitted = true;
+        resultBox.style.display = "block";
         resultBox.innerHTML = `
           <h3>✅ 학습지가 DB에 성공적으로 저장되었습니다!</h3>
           <p style="margin-bottom: 12px;">
-            <strong>제출자:</strong> ${grade}학년 ${classNum}반 ${studentNum}번 ${studentName}
-            <span style="font-size: 0.85rem; color: #15803d;">(문서 ID: ${docRef.id})</span>
+            <strong>제출자:</strong> ${escapeHtml(grade)}학년 ${escapeHtml(classNum)}반 ${escapeHtml(studentNum)}번 ${escapeHtml(studentName)}
+            <span style="font-size: 0.85rem; color: #15803d;">(${escapeHtml(currentUser.email)} · 문서 ID: ${escapeHtml(docRef.id)})</span>
           </p>
           <ul>
-            <li><strong>1번 답안:</strong> ${q1}</li>
-            <li><strong>2번 답안:</strong> ${q2}</li>
-            <li><strong>3번 답안:</strong> ${q3Checked.join(', ')}</li>
-            <li><strong>4번 답안:</strong> ${q4}</li>
-            <li><strong>5번 답안:</strong> ${q5}</li>
+            <li><strong>1번 답안:</strong> ${escapeHtml(q1)}</li>
+            <li><strong>2번 답안:</strong> ${escapeHtml(q2)}</li>
+            <li><strong>3번 답안:</strong> ${escapeHtml(q3Checked.join(", "))}</li>
+            <li><strong>4번 답안:</strong> ${escapeHtml(q4)}</li>
+            <li><strong>5번 답안:</strong> ${escapeHtml(q5)}</li>
           </ul>
         `;
-        resultBox.scrollIntoView({ behavior: 'smooth' });
-        submitBtn.textContent = '제출 완료';
+        resultBox.scrollIntoView({ behavior: "smooth" });
+        submitBtn.textContent = "제출 완료";
       } catch (error) {
         console.error("Firestore 저장 오류:", error);
-        alert("저장 중 오류가 발생했습니다. Firestore 보안 규칙이 게시되어 있는지 확인해 주세요.\n\n오류 내용: " + error.message);
+        alert("저장 중 오류가 발생했습니다. Firestore 보안 규칙과 구글 로그인 설정을 확인해 주세요.\n\n오류 내용: " + error.message);
         submitBtn.disabled = false;
-        submitBtn.textContent = '학습지 제출하기';
+        submitBtn.textContent = "학습지 제출하기";
       }
     });
   </script>
