@@ -201,6 +201,11 @@
       transform: scale(0.98);
     }
 
+    .submit-btn:disabled {
+      background-color: #94a3b8;
+      cursor: not-allowed;
+    }
+
     /* 제출 결과 확인 박스 */
     .result-box {
       display: none;
@@ -362,7 +367,7 @@
 
       <!-- 제출 버튼 -->
       <div class="submit-area">
-        <button type="submit" class="submit-btn">학습지 제출하기</button>
+        <button type="submit" id="submitBtn" class="submit-btn">학습지 제출하기</button>
       </div>
     </form>
 
@@ -370,8 +375,28 @@
     <div id="resultBox" class="result-box"></div>
   </div>
 
-  <script>
-    document.getElementById('worksheetForm').addEventListener('submit', function(event) {
+  <!-- Firebase SDK (v13.3.0) 및 Firestore 연동 -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCD7_cFFfgUtcEg2IfpIgDPyD48AZNb38M",
+      authDomain: "vibecoding3-50b9b.firebaseapp.com",
+      projectId: "vibecoding3-50b9b",
+      storageBucket: "vibecoding3-50b9b.firebasestorage.app",
+      messagingSenderId: "872132980906",
+      appId: "1:872132980906:web:a7121088c22564b03e60d3"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const form = document.getElementById('worksheetForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const resultBox = document.getElementById('resultBox');
+
+    form.addEventListener('submit', async function(event) {
       event.preventDefault();
 
       // 3번 체크박스 최소 1개 선택 검증
@@ -383,31 +408,58 @@
         return;
       }
 
-      const grade = document.getElementById('grade').value;
-      const classNum = document.getElementById('classNum').value;
-      const studentNum = document.getElementById('studentNum').value;
-      const studentName = document.getElementById('studentName').value;
+      const grade = Number(document.getElementById('grade').value);
+      const classNum = Number(document.getElementById('classNum').value);
+      const studentNum = Number(document.getElementById('studentNum').value);
+      const studentName = document.getElementById('studentName').value.trim();
 
       const q1 = document.querySelector('input[name="q1"]:checked').value;
       const q2 = document.querySelector('input[name="q2"]:checked').value;
-      const q4 = document.querySelector('input[name="q4"]').value;
-      const q5 = document.querySelector('textarea[name="q5"]').value;
+      const q4 = document.querySelector('input[name="q4"]').value.trim();
+      const q5 = document.querySelector('textarea[name="q5"]').value.trim();
 
-      const resultBox = document.getElementById('resultBox');
-      resultBox.style.display = 'block';
-      resultBox.innerHTML = `
-        <h3>✅ 학습지가 성공적으로 제출되었습니다!</h3>
-        <p style="margin-bottom: 12px;"><strong>제출자:</strong> ${grade}학년 ${classNum}반 ${studentNum}번 ${studentName}</p>
-        <ul>
-          <li><strong>1번 답안:</strong> ${q1}</li>
-          <li><strong>2번 답안:</strong> ${q2}</li>
-          <li><strong>3번 답안:</strong> ${q3Checked.join(', ')}</li>
-          <li><strong>4번 답안:</strong> ${q4}</li>
-          <li><strong>5번 답안:</strong> ${q5}</li>
-        </ul>
-      `;
+      submitBtn.disabled = true;
+      submitBtn.textContent = '제출 중...';
 
-      resultBox.scrollIntoView({ behavior: 'smooth' });
+      try {
+        const docRef = await addDoc(collection(db, "science_6_seasons"), {
+          grade: grade,
+          classNum: classNum,
+          studentNum: studentNum,
+          studentName: studentName,
+          answers: {
+            q1: q1,
+            q2: q2,
+            q3: q3Checked,
+            q4: q4,
+            q5: q5
+          },
+          submittedAt: serverTimestamp()
+        });
+
+        resultBox.style.display = 'block';
+        resultBox.innerHTML = `
+          <h3>✅ 학습지가 DB에 성공적으로 저장되었습니다!</h3>
+          <p style="margin-bottom: 12px;">
+            <strong>제출자:</strong> ${grade}학년 ${classNum}반 ${studentNum}번 ${studentName}
+            <span style="font-size: 0.85rem; color: #15803d;">(문서 ID: ${docRef.id})</span>
+          </p>
+          <ul>
+            <li><strong>1번 답안:</strong> ${q1}</li>
+            <li><strong>2번 답안:</strong> ${q2}</li>
+            <li><strong>3번 답안:</strong> ${q3Checked.join(', ')}</li>
+            <li><strong>4번 답안:</strong> ${q4}</li>
+            <li><strong>5번 답안:</strong> ${q5}</li>
+          </ul>
+        `;
+        resultBox.scrollIntoView({ behavior: 'smooth' });
+        submitBtn.textContent = '제출 완료';
+      } catch (error) {
+        console.error("Firestore 저장 오류:", error);
+        alert("저장 중 오류가 발생했습니다. Firestore 보안 규칙이 게시되어 있는지 확인해 주세요.\n\n오류 내용: " + error.message);
+        submitBtn.disabled = false;
+        submitBtn.textContent = '학습지 제출하기';
+      }
     });
   </script>
 </body>
