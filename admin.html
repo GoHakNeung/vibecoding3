@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>학습지 제출 현황 및 CSV 다운로드 (관리자용)</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Pretendard', 'Malgun Gothic', '맑은 고딕', sans-serif;
+      background-color: #f0f4f8;
+      color: #1e293b;
+      line-height: 1.5;
+      padding: 24px 16px;
+    }
+
+    .container {
+      max-width: 1260px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      padding: 32px;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 20px;
+      margin-bottom: 24px;
+    }
+
+    .badge {
+      display: inline-block;
+      background-color: #dbeafe;
+      color: #1d4ed8;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 999px;
+      margin-bottom: 6px;
+    }
+
+    h1 {
+      font-size: 1.55rem;
+      color: #0f172a;
+    }
+
+    .sub-text {
+      color: #64748b;
+      font-size: 0.92rem;
+      margin-top: 2px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background-color: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: #475569;
+      font-size: 0.88rem;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: 999px;
+    }
+
+    .status-pill.connected {
+      background-color: #f0fdf4;
+      border-color: #86efac;
+      color: #166534;
+    }
+
+    .status-pill.error {
+      background-color: #fef2f2;
+      border-color: #fecaca;
+      color: #dc2626;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #94a3b8;
+    }
+
+    .status-pill.connected .status-dot {
+      background-color: #22c55e;
+    }
+
+    .status-pill.error .status-dot {
+      background-color: #ef4444;
+    }
+
+    /* 인증 배너 및 게이트 영역 */
+    .auth-box {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      background-color: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 12px;
+      padding: 18px 22px;
+      margin-bottom: 24px;
+    }
+
+    .auth-box.authorized {
+      background-color: #f0fdf4;
+      border-color: #86efac;
+    }
+
+    .auth-box.unauthorized {
+      background-color: #fef2f2;
+      border-color: #fecaca;
+    }
+
+    .auth-info {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .auth-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: #1e3a8a;
+    }
+
+    .auth-box.authorized .auth-title {
+      color: #166534;
+    }
+
+    .auth-box.unauthorized .auth-title {
+      color: #b91c1c;
+    }
+
+    .auth-desc {
+      font-size: 0.88rem;
+      color: #475569;
+    }
+
+    .auth-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .google-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background-color: #ffffff;
+      color: #1e293b;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      transition: background-color 0.15s, border-color 0.15s;
+    }
+
+    .google-btn:hover {
+      background-color: #f8fafc;
+      border-color: #94a3b8;
+    }
+
+    .logout-btn {
+      background-color: #ffffff;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 9px 15px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .logout-btn:hover {
+      background-color: #f1f5f9;
+      color: #0f172a;
+    }
+
+    /* 관리자 전용 데이터 영역 */
+    .dashboard-section.hidden {
+      display: none;
+    }
+
+    /* 상단 요약 및 제어 바 */
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-group label {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #475569;
+    }
+
+    select, input[type="text"] {
+      padding: 9px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-family: inherit;
+      background-color: #ffffff;
+    }
+
+    select:focus, input[type="text"]:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .count-badge {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #334155;
+      background-color: #e2e8f0;
+      padding: 8px 14px;
+      border-radius: 8px;
+    }
+
+    .csv-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background-color: #16a34a;
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 20px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    .csv-btn:hover {
+      background-color: #15803d;
+    }
+
+    .csv-btn:active {
+      transform: scale(0.98);
+    }
+
+    .csv-btn:disabled {
+      background-color: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    /* 데이터 테이블 */
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1080px;
+      font-size: 0.9rem;
+    }
+
+    thead {
+      background-color: #f1f5f9;
+      color: #334155;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: top;
+    }
+
+    th {
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    tbody tr:hover {
+      background-color: #f8fafc;
+    }
+
+    .center {
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .email-cell {
+      color: #475569;
+      font-size: 0.84rem;
+      white-space: nowrap;
+    }
+
+    .q-cell {
+      max-width: 210px;
+      word-break: keep-all;
+    }
+
+    .q5-cell {
+      max-width: 270px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .time-cell {
+      white-space: nowrap;
+      color: #64748b;
+      font-size: 0.84rem;
+    }
+
+    .del-btn {
+      background-color: #fee2e2;
+      color: #dc2626;
+      border: 1px solid #fecaca;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .del-btn:hover {
+      background-color: #fecaca;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 16px;
+      color: #64748b;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px 16px;
+      }
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .actions {
+        justify-content: space-between;
+      }
+      .auth-box {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <span class="badge">교사용 데이터 관리 도구</span>
+        <h1>6학년 과학 학습지 제출 현황</h1>
+        <p class="sub-text">컬렉션: <strong>science_6_seasons</strong> · 지정된 관리자 계정으로 로그인 후 응답을 조회하고 CSV로 내려받습니다.</p>
+      </div>
+      <div class="status-pill" id="connectionStatus">
+        <span class="status-dot"></span>
+        <span>로그인 대기 중</span>
+      </div>
+    </header>
+
+    <!-- 관리자 구글 로그인 상태 배너 -->
+    <section id="authBox" class="auth-box" aria-label="관리자 구글 계정 인증">
+      <div class="auth-info">
+        <span id="authTitle" class="auth-title">🔒 관리자 구글 로그인이 필요합니다</span>
+        <span id="authDesc" class="auth-desc">허용된 관리자 계정(snddl323@gmail.com)으로 로그인해야 제출 데이터를 조회하고 다운로드할 수 있습니다.</span>
+      </div>
+      <div id="authButtons" class="auth-buttons">
+        <button type="button" id="googleLoginBtn" class="google-btn">
+          <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          </svg>
+          <span>Google 계정으로 로그인</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 관리자 인증 완료 시 표시되는 대시보드 영역 -->
+    <main id="dashboardSection" class="dashboard-section hidden">
+      <div class="toolbar">
+        <div class="filters">
+          <div class="filter-group">
+            <label for="classFilter">반 선택</label>
+            <select id="classFilter">
+              <option value="all">전체 반</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="searchInput">검색</label>
+            <input type="text" id="searchInput" placeholder="이름, 이메일 또는 답안 검색">
+          </div>
+        </div>
+
+        <div class="actions">
+          <span class="count-badge" id="countBadge">총 0명</span>
+          <button type="button" id="downloadCsvBtn" class="csv-btn" disabled>
+            📥 CSV 파일 다운로드
+          </button>
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th class="center">학년</th>
+              <th class="center">반</th>
+              <th class="center">번호</th>
+              <th class="center">이름</th>
+              <th>제출 계정</th>
+              <th>1번 (계절 변화 까닭)</th>
+              <th>2번 (남중 고도·낮 길이)</th>
+              <th>3번 (복수 선택)</th>
+              <th>4번 (단답형)</th>
+              <th>5번 (서술형)</th>
+              <th>제출 시각</th>
+              <th class="center">관리</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr>
+              <td colspan="12" class="empty-state">데이터를 불러오는 중입니다...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- Firebase SDK (v13.3.0): Auth + Firestore -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-app.js";
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      onSnapshot,
+      deleteDoc,
+      doc
+    } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCD7_cFFfgUtcEg2IfpIgDPyD48AZNb38M",
+      authDomain: "vibecoding3-50b9b.firebaseapp.com",
+      projectId: "vibecoding3-50b9b",
+      storageBucket: "vibecoding3-50b9b.firebasestorage.app",
+      messagingSenderId: "872132980906",
+      appId: "1:872132980906:web:a7121088c22564b03e60d3"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const ADMIN_EMAIL = "snddl323@gmail.com";
+    const COLLECTION_NAME = "science_6_seasons";
+
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
+
+    let allSubmissions = [];
+    let unsubscribeSnapshot = null;
+
+    const connectionStatus = document.getElementById("connectionStatus");
+    const authBox = document.getElementById("authBox");
+    const authTitle = document.getElementById("authTitle");
+    const authDesc = document.getElementById("authDesc");
+    const authButtons = document.getElementById("authButtons");
+    const dashboardSection = document.getElementById("dashboardSection");
+
+    const classFilter = document.getElementById("classFilter");
+    const searchInput = document.getElementById("searchInput");
+    const countBadge = document.getElementById("countBadge");
+    const downloadCsvBtn = document.getElementById("downloadCsvBtn");
+    const tableBody = document.getElementById("tableBody");
+
+    const GOOGLE_BTN_HTML = `
+      <button type="button" id="googleLoginBtn" class="google-btn">
+        <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        </svg>
+        <span>Google 계정으로 로그인</span>
+      </button>
+    `;
+
+    // 구글 로그인 처리
+    async function handleGoogleLogin() {
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (error) {
+        console.error("Google 로그인 오류:", error);
+        if (error.code === "auth/popup-closed-by-user") return;
+        if (error.code === "auth/unauthorized-domain") {
+          alert("현재 접속한 도메인이 Firebase 승인 도메인에 등록되어 있지 않습니다.\nFirebase 콘솔 > Authentication > Settings > 승인된 도메인에 현재 주소를 추가해 주세요.");
+          return;
+        }
+        alert("구글 로그인 중 오류가 발생했습니다: " + error.message);
+      }
+    }
+
+    // 로그아웃 처리
+    async function handleLogout() {
+      try {
+        stopFirestoreListener();
+        await signOut(auth);
+      } catch (error) {
+        alert("로그아웃 중 오류가 발생했습니다: " + error.message);
+      }
+    }
+
+    // 실시간 구독 해제 및 데이터 초기화
+    function stopFirestoreListener() {
+      if (unsubscribeSnapshot) {
+        unsubscribeSnapshot();
+        unsubscribeSnapshot = null;
+      }
+      allSubmissions = [];
+      tableBody.innerHTML = `<tr><td colspan="12" class="empty-state">관리자 인증 후 데이터가 표시됩니다.</td></tr>`;
+      countBadge.textContent = "총 0명";
+      downloadCsvBtn.disabled = true;
+    }
+
+    // 제출 시각 포맷팅
+    function formatTimestamp(ts) {
+      if (!ts) return "-";
+      const date = typeof ts.toDate === "function" ? ts.toDate() : new Date(ts);
+      if (isNaN(date.getTime())) return "-";
+      const yyyy = date.getFullYear();
+      const mm = String(date.getMonth() + 1).padStart(2, "0");
+      const dd = String(date.getDate()).padStart(2, "0");
+      const hh = String(date.getHours()).padStart(2, "0");
+      const min = String(date.getMinutes()).padStart(2, "0");
+      const ss = String(date.getSeconds()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
+    }
+
+    // HTML 이스케이프
+    function escapeHtml(text) {
+      if (text === null || text === undefined) return "";
+      return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    // 반 필터 옵션 동적 갱신
+    function updateClassFilterOptions() {
+      const currentVal = classFilter.value;
+      const classes = [...new Set(allSubmissions.map(item => item.classNum))]
+        .filter(c => c !== "" && c !== null && c !== undefined)
+        .sort((a, b) => Number(a) - Number(b));
+
+      classFilter.innerHTML = '<option value="all">전체 반</option>';
+      classes.forEach(c => {
+        const option = document.createElement("option");
+        option.value = String(c);
+        option.textContent = `${c}반`;
+        classFilter.appendChild(option);
+      });
+
+      if ([...classFilter.options].some(opt => opt.value === currentVal)) {
+        classFilter.value = currentVal;
+      }
+    }
+
+    // 현재 필터/검색 조건이 적용된 목록 반환
+    function getFilteredSubmissions() {
+      const selectedClass = classFilter.value;
+      const keyword = searchInput.value.trim().toLowerCase();
+
+      return allSubmissions.filter(item => {
+        const matchClass = selectedClass === "all" || String(item.classNum) === selectedClass;
+        if (!matchClass) return false;
+
+        if (!keyword) return true;
+        const searchableText = [
+          item.studentName,
+          item.userEmail,
+          item.q1,
+          item.q2,
+          item.q3Text,
+          item.q4,
+          item.q5
+        ].join(" ").toLowerCase();
+
+        return searchableText.includes(keyword);
+      });
+    }
+
+    // 테이블 렌더링
+    function renderTable() {
+      const filtered = getFilteredSubmissions();
+      countBadge.textContent = `표시: ${filtered.length}명 (전체 ${allSubmissions.length}명)`;
+      downloadCsvBtn.disabled = filtered.length === 0;
+
+      if (filtered.length === 0) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="12" class="empty-state">조건에 해당하는 제출 데이터가 없습니다.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      tableBody.innerHTML = filtered.map(item => `
+        <tr>
+          <td class="center">${escapeHtml(item.grade)}</td>
+          <td class="center">${escapeHtml(item.classNum)}</td>
+          <td class="center">${escapeHtml(item.studentNum)}</td>
+          <td class="center"><strong>${escapeHtml(item.studentName)}</strong></td>
+          <td class="email-cell">${escapeHtml(item.userEmail || "-")}</td>
+          <td class="q-cell">${escapeHtml(item.q1)}</td>
+          <td class="q-cell">${escapeHtml(item.q2)}</td>
+          <td class="q-cell">${escapeHtml(item.q3Text)}</td>
+          <td class="q-cell">${escapeHtml(item.q4)}</td>
+          <td class="q5-cell">${escapeHtml(item.q5)}</td>
+          <td class="time-cell">${escapeHtml(item.submittedAtText)}</td>
+          <td class="center">
+            <button type="button" class="del-btn" data-id="${escapeHtml(item.id)}" data-name="${escapeHtml(item.studentName)}">삭제</button>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    // 관리자 인증 완료 후 Firestore 실시간 구독 시작
+    function startFirestoreListener() {
+      stopFirestoreListener();
+
+      connectionStatus.className = "status-pill";
+      connectionStatus.innerHTML = `<span class="status-dot"></span><span>DB 연결 중...</span>`;
+      tableBody.innerHTML = `<tr><td colspan="12" class="empty-state">데이터를 불러오는 중입니다...</td></tr>`;
+
+      unsubscribeSnapshot = onSnapshot(collection(db, COLLECTION_NAME), (snapshot) => {
+        connectionStatus.className = "status-pill connected";
+        connectionStatus.innerHTML = `<span class="status-dot"></span><span>실시간 연결됨</span>`;
+
+        allSubmissions = snapshot.docs.map(docSnap => {
+          const data = docSnap.data();
+          const answers = data.answers || {};
+          const q3Raw = answers.q3 ?? data.q3 ?? [];
+          const q3Text = Array.isArray(q3Raw) ? q3Raw.join(" / ") : String(q3Raw);
+
+          return {
+            id: docSnap.id,
+            grade: data.grade ?? "",
+            classNum: data.classNum ?? "",
+            studentNum: data.studentNum ?? "",
+            studentName: data.studentName ?? "",
+            userEmail: data.userEmail ?? "",
+            q1: answers.q1 ?? data.q1 ?? "",
+            q2: answers.q2 ?? data.q2 ?? "",
+            q3Text: q3Text,
+            q4: answers.q4 ?? data.q4 ?? "",
+            q5: answers.q5 ?? data.q5 ?? "",
+            submittedAtText: formatTimestamp(data.submittedAt)
+          };
+        });
+
+        // 반 -> 번호 순 정렬
+        allSubmissions.sort((a, b) => {
+          const classDiff = Number(a.classNum) - Number(b.classNum);
+          if (classDiff !== 0) return classDiff;
+          return Number(a.studentNum) - Number(b.studentNum);
+        });
+
+        updateClassFilterOptions();
+        renderTable();
+      }, (error) => {
+        console.error("Firestore 조회 오류:", error);
+        connectionStatus.className = "status-pill error";
+        connectionStatus.innerHTML = `<span class="status-dot"></span><span>권한 또는 연결 오류</span>`;
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="12" class="empty-state">데이터를 불러오지 못했습니다. Firestore 보안 규칙과 관리자 계정 상태를 확인해 주세요.<br>(${escapeHtml(error.message)})</td>
+          </tr>
+        `;
+      });
+    }
+
+    // 인증 상태 감지 및 권한 분기
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        // 1. 비로그인 상태
+        stopFirestoreListener();
+        dashboardSection.classList.add("hidden");
+
+        connectionStatus.className = "status-pill";
+        connectionStatus.innerHTML = `<span class="status-dot"></span><span>로그인 대기 중</span>`;
+
+        authBox.className = "auth-box";
+        authTitle.textContent = "🔒 관리자 구글 로그인이 필요합니다";
+        authDesc.textContent = `허용된 관리자 계정(${ADMIN_EMAIL})으로 로그인해야 제출 데이터를 조회하고 다운로드할 수 있습니다.`;
+        authButtons.innerHTML = GOOGLE_BTN_HTML;
+        document.getElementById("googleLoginBtn").addEventListener("click", handleGoogleLogin);
+        return;
+      }
+
+      if (user.email !== ADMIN_EMAIL) {
+        // 2. 로그인은 했으나 관리자 이메일이 아닌 경우
+        stopFirestoreListener();
+        dashboardSection.classList.add("hidden");
+
+        connectionStatus.className = "status-pill error";
+        connectionStatus.innerHTML = `<span class="status-dot"></span><span>접근 권한 없음</span>`;
+
+        authBox.className = "auth-box unauthorized";
+        authTitle.textContent = `⛔ 접근 권한이 없는 계정입니다 (${user.email})`;
+        authDesc.textContent = `이 페이지는 관리자 계정(${ADMIN_EMAIL})만 조회 및 CSV 다운로드가 허용되어 있습니다.`;
+        authButtons.innerHTML = `
+          <button type="button" id="switchAccountBtn" class="google-btn">다른 구글 계정으로 로그인</button>
+          <button type="button" id="logoutBtn" class="logout-btn">로그아웃</button>
+        `;
+        document.getElementById("switchAccountBtn").addEventListener("click", handleGoogleLogin);
+        document.getElementById("logoutBtn").addEventListener("click", handleLogout);
+        return;
+      }
+
+      // 3. 관리자 계정(snddl323@gmail.com) 인증 성공
+      authBox.className = "auth-box authorized";
+      authTitle.textContent = `✅ 관리자 인증 완료: ${user.displayName || "관리자"} (${user.email})`;
+      authDesc.textContent = "실시간 제출 현황을 확인하고 CSV 파일로 내려받을 수 있습니다.";
+      authButtons.innerHTML = `<button type="button" id="logoutBtn" class="logout-btn">로그아웃</button>`;
+      document.getElementById("logoutBtn").addEventListener("click", handleLogout);
+
+      dashboardSection.classList.remove("hidden");
+      startFirestoreListener();
+    });
+
+    // 필터/검색 이벤트
+    classFilter.addEventListener("change", renderTable);
+    searchInput.addEventListener("input", renderTable);
+
+    // 개별 행 삭제 이벤트
+    tableBody.addEventListener("click", async (event) => {
+      const btn = event.target.closest(".del-btn");
+      if (!btn) return;
+
+      const docId = btn.dataset.id;
+      const studentName = btn.dataset.name;
+      if (!confirm(`'${studentName}' 학생의 제출 기록을 삭제하시겠습니까?`)) return;
+
+      try {
+        await deleteDoc(doc(db, COLLECTION_NAME, docId));
+      } catch (error) {
+        alert("삭제 중 오류가 발생했습니다: " + error.message);
+      }
+    });
+
+    // CSV 셀 이스케이프 처리
+    function escapeCsvCell(value) {
+      if (value === null || value === undefined) return '""';
+      const str = String(value).replace(/"/g, '""');
+      return `"${str}"`;
+    }
+
+    // CSV 파일 생성 및 다운로드
+    downloadCsvBtn.addEventListener("click", () => {
+      const rowsToExport = getFilteredSubmissions();
+      if (rowsToExport.length === 0) return;
+
+      const headers = [
+        "학년",
+        "반",
+        "번호",
+        "이름",
+        "제출계정",
+        "1번(계절 변화 까닭)",
+        "2번(남중 고도·낮 길이 비교)",
+        "3번(남중 고도 높아질 때 현상)",
+        "4번(단답형)",
+        "5번(서술형)",
+        "제출일시"
+      ];
+
+      const csvLines = [
+        headers.map(escapeCsvCell).join(","),
+        ...rowsToExport.map(item => [
+          item.grade,
+          item.classNum,
+          item.studentNum,
+          item.studentName,
+          item.userEmail,
+          item.q1,
+          item.q2,
+          item.q3Text,
+          item.q4,
+          item.q5,
+          item.submittedAtText
+        ].map(escapeCsvCell).join(","))
+      ];
+
+      // 엑셀 한글 깨짐 방지를 위한 UTF-8 BOM 추가
+      const BOM = "\uFEFF";
+      const csvContent = BOM + csvLines.join("\r\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+      const today = new Date().toISOString().slice(0, 10);
+      const classLabel = classFilter.value === "all" ? "전체반" : `${classFilter.value}반`;
+      const fileName = `6학년_과학_계절변화_학습지결과_${classLabel}_${today}.csv`;
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>
